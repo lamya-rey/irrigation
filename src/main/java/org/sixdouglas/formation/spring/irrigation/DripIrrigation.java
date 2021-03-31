@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.Instant;
 
 @Component
 public class DripIrrigation {
@@ -16,23 +17,36 @@ public class DripIrrigation {
 
     public Flux<Drop> followDrops() {
         //TODO Create a Flux that would emit a Drop every 20 millis seconds
-        return null;
+        Flux<Drop> dropFlux = Flux
+                .interval(Duration.ofMillis(20))
+                .map(drop-> Drop.builder().greenHouseId(1)
+                        .rowId(1).dropperId(1)
+                        .instant(Instant.now())
+                        .build());
+        return dropFlux;
     }
 
     public Flux<Drop> followDropper(int greenHouseId, int rowId, int dropperId) {
         //TODO use the GreenHouseProducer.getDrops() function as producer, but filter the output to fit the given criteria
-        return null;
+        Flux<Drop> dropFlux = GreenHouseProducer.getDrops()
+                .filter(drop -> drop.getGreenHouseId() == greenHouseId && drop.getRowId() == rowId && drop.getDropperId() == dropperId);
+        return dropFlux ;
     }
 
     public Flux<DetailedDrop> followDetailedDropper(int greenHouseId, int rowId, int dropperId) {
         //TODO use the GreenHouseProducer.getDrops() function as producer, but filter the output to fit the given criteria
         //TODO    then map it to a DetailedDrop using the getDetailedDrop() function
-        return null;
+        return GreenHouseProducer.getDrops()
+                .filter(gh-> gh.getGreenHouseId() == greenHouseId &&
+                        gh.getRowId() == rowId && gh.getDropperId() == dropperId)
+                .flatMap(gh -> getDetailedDrop(gh));
     }
 
     private Mono<DetailedDrop> getDetailedDrop(Drop drop) {
         //TODO use the GreenHouseProducer.getDropper() function to find the Dropper information wrap in a Greenhouse
         //TODO    then map it to build a DetailedDrop
-        return null;
+        return GreenHouseProducer.getDropper(drop.getGreenHouseId(), drop.getRowId(), drop.getDropperId())
+                .map(gh -> DetailedDrop.builder().instant(Instant.now()).gh(gh).build());
+
     }
 }

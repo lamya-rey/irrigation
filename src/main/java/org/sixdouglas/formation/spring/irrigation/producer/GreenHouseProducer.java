@@ -84,6 +84,15 @@ public final class GreenHouseProducer {
         //TODO          Create a flux that will emit a Drop every 10 millis seconds using the buildDrop() function
         //TODO          then merge this new flux int the dropsFlux
 
+        for (GreenHouse gh: greenHouses) {
+            for (Row r: gh.getRows()) {
+                for (Dropper dr: row.getDroppers()) {
+                    Flux<Drop> newFlux = Flux.interval(Duration.ofMillis(10)).flatMap(aLong -> buildDrop(gh, r, dr));
+                    dropsFlux = Flux.merge(newFlux,dropsFlux);
+                }
+            }
+        }
+
         return dropsFlux;
     }
 
